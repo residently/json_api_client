@@ -52,7 +52,7 @@ class SerializingTest < MiniTest::Test
     assert_equal expected, resource.first.as_json
   end
 
-  def test_as_json_involving_last_result_set
+  def test_as_json_involving_latest_result_set
     expected = {
       'type' => 'articles',
       'id' => '1',

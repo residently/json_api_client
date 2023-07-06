@@ -11,7 +11,7 @@ module JsonApiClient
           h[type] = records.map do |record|
             params = klass.parser.parameters_from_resource(record)
             klass.load(params).tap do |resource|
-              resource.last_result_set = result_set
+              resource.current_result_set = result_set
             end
           end
         rescue NameError => e

@@ -14,10 +14,13 @@ module JsonApiClient
     include Helpers::Dirty
     include Helpers::Associatable
 
-    attr_accessor :last_result_set,
+    attr_accessor :latest_result_set,
                   :links,
                   :relationships,
                   :request_params
+
+    attr_reader :current_result_set
+
     class_attribute :site,
                     :primary_key,
                     :parser,
@@ -373,6 +376,11 @@ module JsonApiClient
       self.request_params = self.class.request_params_class.new(self.class)
     end
 
+    def current_result_set=(result_set)
+      @current_result_set = result_set
+      @latest_result_set = result_set
+    end
+
     # Set the current attributes and try to save them
     #
     # @param attrs [Hash] Attributes to update
@@ -480,21 +488,21 @@ module JsonApiClient
       return false unless valid?
       raise JsonApiClient::Errors::ResourceImmutableError if _immutable
 
-      result_set = if persisted?
+      self.latest_result_set = if persisted?
         self.class.requestor.update(self)
       else
         self.class.requestor.create(self)
       end
 
-      if result_set.has_errors?
-        fill_errors(result_set.errors)
+      if latest_result_set.has_errors?
+        fill_errors(latest_result_set.errors)
         false
       else
-        self.last_result_set = result_set
+        self.current_result_set = latest_result_set
         self.errors.clear if self.errors
         self.request_params.clear unless self.class.keep_request_params
         mark_as_persisted!
-        if updated = last_result_set.first
+        if updated = current_result_set.first
           self.attributes = updated.attributes
           self.links.attributes = updated.links.attributes
           self.relationships.attributes = updated.relationships.attributes
@@ -512,12 +520,13 @@ module JsonApiClient
     def destroy
       raise JsonApiClient::Errors::ResourceImmutableError if _immutable
 
-      result_set = self.class.requestor.destroy(self)
-      if result_set.has_errors?
-        fill_errors(result_set.errors)
+      self.latest_result_set = self.class.requestor.destroy(self)
+
+      if latest_result_set.has_errors?
+        fill_errors(latest_result_set.errors)
         false
       else
-        self.last_result_set = result_set
+        self.current_result_set = latest_result_set
         mark_as_destroyed!
         _clear_cached_relationships
         _clear_belongs_to_params
@@ -574,7 +583,7 @@ module JsonApiClient
     end
 
     def included_data_for(name, relationship_definition)
-      last_result_set.included.data_for(name, relationship_definition)
+      current_result_set.included.data_for(name, relationship_definition)
     end
 
     def relationship_data_for(name, relationship_definition)

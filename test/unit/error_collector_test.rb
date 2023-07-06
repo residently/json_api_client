@@ -97,7 +97,7 @@ class ErrorCollectorTest < MiniTest::Test
     assert_equal ["Email address is invalid."], article.errors[:email_address]
     assert_equal ["Title already taken"], article.errors[:base]
 
-    error = article.last_result_set.errors.first
+    error = article.latest_result_set.errors.first
     assert_equal "1234-abcd", error.id
     assert_equal "http://example.com/help/errors/1337", error.about
     assert_equal "400", error.status
@@ -109,7 +109,7 @@ class ErrorCollectorTest < MiniTest::Test
     assert error.meta.is_a?(JsonApiClient::MetaData)
     assert_equal "asdf", error.meta.qwer
 
-    error = article.last_result_set.errors.last
+    error = article.latest_result_set.errors.last
     assert_equal "33333", error.id
     assert_nil error.about
     assert_equal "400", error.status
@@ -157,7 +157,7 @@ class ErrorCollectorTest < MiniTest::Test
 
     assert_equal ["You can't create this record"], article.errors[:base]
 
-    error = article.last_result_set.errors.first
+    error = article.latest_result_set.errors.first
     assert_equal "1234-abcd", error.id
     assert_nil error.about
     assert_equal "422", error.status
@@ -204,7 +204,7 @@ class ErrorCollectorTest < MiniTest::Test
 
     assert_equal ["include bar is required"], article.errors[:base]
 
-    error = article.last_result_set.errors.first
+    error = article.latest_result_set.errors.first
     assert_equal "1234-abcd", error.id
     assert_nil error.about
     assert_equal "400", error.status
@@ -293,7 +293,7 @@ class ErrorCollectorTest < MiniTest::Test
 
       assert_equal ["invalid"], article.errors[:base]
 
-      error = article.last_result_set.errors.first
+      error = article.latest_result_set.errors.first
       assert_equal "1337", error.id
 
       assert_equal({}, error.about, nil)
