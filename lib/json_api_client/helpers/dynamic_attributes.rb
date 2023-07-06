@@ -3,13 +3,12 @@ module JsonApiClient
     module DynamicAttributes
 
       def attributes
-        @attributes
+        @attributes ||= ActiveSupport::HashWithIndifferentAccess.new
       end
 
       def attributes=(attrs = {})
-        @attributes ||= ActiveSupport::HashWithIndifferentAccess.new
+        return unless attrs.present?
 
-        return @attributes unless attrs.present?
         attrs.each do |key, value|
           send("#{key}=", value)
         end
