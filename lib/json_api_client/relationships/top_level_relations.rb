@@ -10,7 +10,7 @@ module JsonApiClient
       end
 
       def respond_to_missing?(method, include_private = false)
-        relations.has_key?(method.to_s) || super
+        relations&.has_key?(method.to_s) || super
       end
 
       def method_missing(method, *args)
