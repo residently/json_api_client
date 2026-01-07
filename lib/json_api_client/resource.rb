@@ -182,13 +182,19 @@ module JsonApiClient
       end
 
       # Within the given block, add these headers to all requests made by
-      # the resource class
+      # the resource class. The block is evaluated in the context of the
+      # resource class, so you can call class methods directly.
       #
       # @param headers [Hash] The headers to send along
       # @param block [Block] The block where headers will be set for
-      def with_headers(headers)
+      # @example
+      #   MyResource.with_headers('X-Custom-Header': 'value') do
+      #     find(1) # calls MyResource.find(1)
+      #     where(status: 'active').all
+      #   end
+      def with_headers(headers, &block)
         self._custom_headers = headers
-        yield
+        instance_eval(&block)
       ensure
         self._custom_headers = {}
       end
