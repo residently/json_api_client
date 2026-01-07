@@ -64,7 +64,7 @@ module JsonApiClient
       end
 
       def request(type, path, params: nil, body: nil)
-        response = connection.run(type, path, params: params, body: body, headers: klass.custom_headers)
+        response = connection.run(type, path, params: params, body: body, headers: klass.custom_headers, internally: klass.internally)
         klass.parser.parse(klass, response)
       end
 

@@ -31,9 +31,11 @@ module JsonApiClient
       faraday.builder.delete(middleware)
     end
 
-    def run(request_method, path, params: nil, headers: {}, body: nil)
+    def run(request_method, path, params: nil, headers: {}, body: nil, internally: false)
       faraday.run_request(request_method, path, body, headers) do |request|
         request.params.update(params) if params
+        request.options.update(context: { internally: internally })
+        request
       end
     end
 

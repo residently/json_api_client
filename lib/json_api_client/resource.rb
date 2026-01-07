@@ -199,6 +199,30 @@ module JsonApiClient
         self._custom_headers = {}
       end
 
+      # Within the given block, setting an internally option that will be available
+      # to custom middleware. The block is evaluated in the context of the
+      # resource class, so you can call class methods directly.
+      #
+      # When called without a block, returns the current value of _internally.
+      #
+      # @param block [Block] block to be executed internally
+      # @return [Boolean] The value of internally
+      # @example
+      #   MyResource.internally do
+      #     find(1) # calls MyResource.find(1) with internal options
+      #     where(status: 'active').all
+      #   end
+      #
+      #   MyResource.internally # => false (returns current state)
+      def internally(&block)
+        return _internally unless block_given?
+
+        self._internally = true
+        instance_eval(&block)
+      ensure
+        self._internally = false
+      end
+
       # The current custom headers to send with any request made by this
       # resource class
       #
@@ -349,6 +373,14 @@ module JsonApiClient
 
       def _header_store
         Thread.current["json_api_client-#{resource_name}"] ||= {}
+      end
+
+      def _internally
+        Thread.current["json_api_client-with-internal-#{resource_name}"] ||= false
+      end
+
+      def _internally=(val)
+        Thread.current["json_api_client-with-internal-#{resource_name}"] = val
       end
 
       def _build_connection(rebuild = false)
